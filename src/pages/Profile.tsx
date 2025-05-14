@@ -1,34 +1,63 @@
 import { ArrowLeft } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
+import { useState, useEffect } from "react"
 import { ProfileHeader } from "../components/profile-header"
 import { ProfileTabs } from "../components/profile-tabs"
 import { Tweet } from "../components/tweet"
+import { useAuth } from "../lib/contexts/auth-context"
+import { getUserProfile } from "../lib/firebase/user-service"
+import type { UserProfile } from "../lib/firebase/user-service"
 
-interface ProfilePageProps {
-  params: {
-    username: string
-  }
-}
-
-export default function ProfilePage({ params }: ProfilePageProps) {
-  const { username } = params
-
-  // Datos de ejemplo para el perfil
+export default function ProfilePage() {
+  const { username } = useParams()
+  const { currentUser } = useAuth()
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [loading, setLoading] = useState(true)
+  
+  // Verificar si el perfil corresponde al usuario actual
+  const isCurrentUserProfile = username === (currentUser?.displayName || currentUser?.email?.split('@')[0])
+  
+  // Determinar el usuario a mostrar
+  const currentUsername = username || (currentUser?.displayName || currentUser?.email?.split('@')[0] || "usuario")
+  
+  useEffect(() => {
+    async function fetchUserProfile() {
+      setLoading(true)
+      
+      try {
+        if (currentUser) {
+          const profile = await getUserProfile(currentUser.uid)
+          setUserProfile(profile)
+        }
+      } catch (error) {
+        console.error("Error al cargar el perfil:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchUserProfile()
+  }, [currentUser])
+  
+  // Datos del perfil basados en el usuario desde Firestore o valores predeterminados
   const profileData = {
-    name: "Elon Musk",
-    username: "elonmusk",
-    bio: "Dueño de X, SpaceX, Tesla, Neuralink, The Boring Company. Trabajando para hacer que la vida sea multiplanetaria.",
-    location: "Marte",
-    website: "tesla.com",
-    joinDate: "Junio 2009",
-    following: 178,
-    followers: 181500000,
-    coverImage: "/placeholder.svg?height=200&width=600",
-    profileImage: "/placeholder.svg?height=150&width=150",
+    name: userProfile?.username || currentUsername,
+    username: userProfile?.displayName || (isCurrentUserProfile ? 
+      (currentUser?.displayName || currentUser?.email?.split('@')[0] || currentUsername) : 
+      currentUsername.toLowerCase().replace(/\s/g, '')),
+    bio: userProfile?.bio || "No bio yet",
+    location: userProfile?.location || "Not specified",
+    website: userProfile?.website || "",
+    joinDate: "Mayo 2025",
+    following: userProfile?.following || 0,
+    followers: userProfile?.followers || 0,
+    coverImage: userProfile?.coverImage || "/placeholder.svg?height=200&width=600",
+    profileImage: userProfile?.photoURL || (isCurrentUserProfile && currentUser?.photoURL ? 
+      currentUser.photoURL : 
+      "/placeholder.svg?height=150&width=150"),
   }
-
-  // Tweets de ejemplo
-  const tweets = [
+  // Tweets de ejemplo - adaptados para mostrar tweets genéricos o personalizados
+  const tweets = isCurrentUserProfile ? [
     {
       id: 1,
       user: {
@@ -36,49 +65,33 @@ export default function ProfilePage({ params }: ProfilePageProps) {
         handle: `@${profileData.username}`,
         avatar: profileData.profileImage,
       },
-      content: "La inteligencia artificial transformará el mundo más rápido de lo que pensamos.",
+      content: "¡Hola Twitter! Este es mi primer tweet en esta plataforma. Estoy emocionado de comenzar a compartir.",
       time: "2h",
       stats: {
-        replies: 1024,
-        retweets: 5678,
-        likes: 45678,
-        views: "2.3M",
+        replies: 0,
+        retweets: 0,
+        likes: 0,
+        views: "0",
       },
-    },
+    }
+  ] : [
     {
-      id: 2,
+      id: 1,
       user: {
         name: profileData.name,
         handle: `@${profileData.username}`,
         avatar: profileData.profileImage,
       },
-      content: "Los cohetes de SpaceX son reutilizables. Esto reduce drásticamente el costo de acceso al espacio.",
-      time: "1d",
+      content: "Este perfil aún no ha publicado ningún tweet.",
+      time: "1h",
       stats: {
-        replies: 3456,
-        retweets: 12345,
-        likes: 98765,
-        views: "5.7M",
+        replies: 0,
+        retweets: 0,
+        likes: 0,
+        views: "0",
       },
-    },
-    {
-      id: 3,
-      user: {
-        name: profileData.name,
-        handle: `@${profileData.username}`,
-        avatar: profileData.profileImage,
-      },
-      content: "Tesla está trabajando en robots humanoides. El futuro será interesante.",
-      time: "3d",
-      stats: {
-        replies: 2345,
-        retweets: 7890,
-        likes: 34567,
-        views: "4.1M",
-      },
-    },
+    }
   ]
-
   return (
     <main className="min-h-screen bg-black text-white w-full">
       <div className="w-full max-w-screen-xl mx-auto lg:max-w-full" style={{ overflowX: 'clip' }}>
@@ -94,15 +107,26 @@ export default function ProfilePage({ params }: ProfilePageProps) {
           </div>
         </div>
 
-        <ProfileHeader profile={profileData} />
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : (
+          <>
+            <ProfileHeader 
+              profile={profileData} 
+              isCurrentUserProfile={isCurrentUserProfile} 
+            />
 
-        <ProfileTabs />
+            <ProfileTabs />
 
-        <div className="pb-16">
-          {tweets.map((tweet) => (
-            <Tweet key={tweet.id} tweet={tweet} />
-          ))}
-        </div>
+            <div className="pb-16">
+              {tweets.map((tweet) => (
+                <Tweet key={tweet.id} tweet={tweet} />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </main>
   )

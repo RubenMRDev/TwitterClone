@@ -1,4 +1,4 @@
-import { MapPin, Calendar, LinkIcon } from "lucide-react"
+import { MapPin, Calendar, LinkIcon, Edit3 } from "lucide-react"
 
 interface ProfileHeaderProps {
   profile: {
@@ -13,9 +13,10 @@ interface ProfileHeaderProps {
     coverImage: string
     profileImage: string
   }
+  isCurrentUserProfile?: boolean
 }
 
-export function ProfileHeader({ profile }: ProfileHeaderProps) {
+export function ProfileHeader({ profile, isCurrentUserProfile = false }: ProfileHeaderProps) {
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + "M"
@@ -41,13 +42,18 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
             />
           </div>
         </div>
-      </div>
-
-      {/* Botones de acción */}
+      </div>      {/* Botones de acción */}
       <div className="flex justify-end p-4">
-        <button className="border border-gray-600 text-white px-4 py-1.5 rounded-full font-bold hover:bg-gray-900">
-          Seguir
-        </button>
+        {isCurrentUserProfile ? (
+          <button className="border border-gray-600 text-white px-4 py-1.5 rounded-full font-bold hover:bg-gray-900 flex items-center gap-2">
+            <Edit3 className="h-4 w-4" />
+            Editar perfil
+          </button>
+        ) : (
+          <button className="border border-gray-600 text-white px-4 py-1.5 rounded-full font-bold hover:bg-gray-900">
+            Seguir
+          </button>
+        )}
       </div>
 
       {/* Información del perfil */}

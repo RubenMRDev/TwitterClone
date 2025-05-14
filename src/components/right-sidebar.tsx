@@ -16,28 +16,80 @@ export function RightSidebar() {
   ]
 
   return (
-    <div className="w-80 p-4 space-y-4 sticky top-0 h-screen overflow-y-auto overflow-x-hidden shrink-0">
-      <div className="sticky top-0 pt-1 pb-3 bg-black">
+    <div className="w-80 p-4 space-y-4 sticky top-0 h-screen overflow-y-auto">
+      <div className="sticky top-0 pt-1 pb-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-500" />
+          </div>
           <input
             type="text"
             placeholder="Buscar en Twitter"
-            className="w-full bg-gray-800 text-white rounded-full pl-10 pr-4 py-2 focus:outline-none"
+            className="bg-gray-800 w-full pl-10 pr-4 py-2 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-black"
           />
         </div>
       </div>
-      <div>
-        <h2 className="text-lg font-bold text-white">Tendencias</h2>
-        <ul className="space-y-3">
-          {trends.map((trend) => (
-            <li key={trend.id} className="text-gray-400">
-              <p className="text-sm">{trend.category}</p>
-              <p className="text-white font-bold">{trend.title}</p>
-              <p className="text-sm">{trend.tweets} Tweets</p>
-            </li>
-          ))}
-        </ul>
+
+      <div className="bg-gray-800 rounded-2xl p-4">
+        <h2 className="font-bold text-xl mb-4">Qué está pasando</h2>
+        {trends.map((trend) => (
+          <div key={trend.id} className="py-3 hover:bg-gray-700/30 rounded-lg cursor-pointer px-2">
+            <p className="text-xs text-gray-500">{trend.category}</p>
+            <p className="font-bold">{trend.title}</p>
+            <p className="text-xs text-gray-500">{trend.tweets} Tweets</p>
+          </div>
+        ))}
+        <button className="text-blue-500 hover:bg-gray-700/30 w-full text-left p-3 rounded-lg mt-1">Mostrar más</button>
+      </div>
+
+      <div className="bg-gray-800 rounded-2xl p-4">
+        <h2 className="font-bold text-xl mb-4">A quién seguir</h2>
+        {suggestions.map((suggestion) => (
+          <div
+            key={suggestion.id}
+            className="flex items-center justify-between py-3 hover:bg-gray-700/30 rounded-lg px-2"
+          >
+            <div className="flex items-center">
+              <div className="relative w-12 h-12 rounded-full bg-gray-700 overflow-hidden mr-3">
+                <img
+                  src={suggestion.avatar || "/placeholder.svg"}
+                  alt={suggestion.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <p className="font-bold leading-tight">{suggestion.name}</p>
+                <p className="text-gray-500 text-sm">{suggestion.handle}</p>
+              </div>
+            </div>
+            <button className="bg-white text-black hover:bg-gray-200 rounded-full font-bold text-sm px-4 py-1 transition-colors">
+              Seguir
+            </button>
+          </div>
+        ))}
+        <button className="text-blue-500 hover:bg-gray-700/30 w-full text-left p-3 rounded-lg mt-1">Mostrar más</button>
+      </div>
+
+      <div className="text-xs text-gray-500 flex flex-wrap gap-2 px-4">
+        <a href="#" className="hover:underline">
+          Términos de Servicio
+        </a>
+        <a href="#" className="hover:underline">
+          Política de Privacidad
+        </a>
+        <a href="#" className="hover:underline">
+          Política de cookies
+        </a>
+        <a href="#" className="hover:underline">
+          Accesibilidad
+        </a>
+        <a href="#" className="hover:underline">
+          Información de anuncios
+        </a>
+        <a href="#" className="hover:underline">
+          Más opciones
+        </a>
+        <span>© 2025 X Corp.</span>
       </div>
     </div>
   )
